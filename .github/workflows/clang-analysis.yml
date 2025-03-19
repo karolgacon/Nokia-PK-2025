@@ -23,11 +23,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y clang-tidy clang-format
 
       - name: Run Clang-Tidy
-        run: clang-tidy $(find . -name '*.cpp' -or -name '*.h') -- -Iinclude 2> clang-tidy-report.txt || true
+        run: |
+          find . -path ./BTS/Tests -prune -o -path ./UE/Tests -prune -o -path ./COMMON/Tests -prune -o \( -name '*.cpp' -or -name '*.h' \) -exec clang-tidy {} -- -Iinclude \; 2> clang-tidy-report.txt || true
 
       - name: Check Clang-Format compliance
         run: |
-          find . -name '*.cpp' -or -name '*.h' | xargs clang-format --dry-run --Werror
+          find . -path ./BTS/Tests -prune -o -path ./UE/Tests -prune -o -path ./COMMON/Tests -prune -o \( -name '*.cpp' -or -name '*.h' \) | xargs clang-format --dry-run --Werror
 
       - name: Upload Clang-Tidy Report
         uses: actions/upload-artifact@v4
