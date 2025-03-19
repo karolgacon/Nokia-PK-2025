@@ -17,8 +17,8 @@ jobs:
         
     steps:
     - uses: actions/checkout@v2
-    - name: Clean Qt directory
-      run: rm -rf /home/runner/work/Nokia-PK-2025/Qt || true
+    - name: Check if Qt archive exists
+      run: ls -lah /home/runner/work/Nokia-PK-2025/Qt
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
