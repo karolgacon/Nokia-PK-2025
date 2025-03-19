@@ -16,9 +16,6 @@ jobs:
         working-directory: src
         
     steps:
-    - name: Update system packages
-      run: sudo apt-get update
-
     - uses: actions/checkout@v2
     - name: Run C++ Linter
       uses: cpp-linter/cpp-linter-action@v2
