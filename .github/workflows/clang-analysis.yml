@@ -1,0 +1,36 @@
+name: Clang-Tidy & Clang-Format Analysis
+
+on:
+  push:
+    branches: "**"
+  pull_request:
+    branches: "**"
+
+jobs:
+  static-analysis:
+    name: Clang-Tidy & Clang-Format
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: src
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy clang-format
+
+      - name: Run Clang-Tidy
+        run: clang-tidy $(find . -name '*.cpp' -or -name '*.h') -- -Iinclude 2> clang-tidy-report.txt || true
+
+      - name: Check Clang-Format compliance
+        run: |
+          find . -name '*.cpp' -or -name '*.h' | xargs clang-format --dry-run --Werror
+
+      - name: Upload Clang-Tidy Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: clang-tidy-report
+          path: src/clang-tidy-report.txt
