@@ -17,6 +17,8 @@ jobs:
         
     steps:
     - uses: actions/checkout@v2
+    - name: Check for 7z
+      run: which 7z || echo "7z is missing"
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
     - name: cmake
