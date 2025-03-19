@@ -24,11 +24,11 @@ jobs:
 
       - name: Run Clang-Tidy
         run: |
-          find . -path ./BTS/Tests -prune -o -path ./UE/Tests -prune -o -path ./COMMON/Tests -prune -o \( -name '*.cpp' -or -name '*.h' \) -exec clang-tidy {} -- -Iinclude \; 2> clang-tidy-report.txt || true
+          find BTS UE COMMON -path '*/Tests' -prune -o \( -name '*.cpp' -or -name '*.h' \) -exec clang-tidy {} -- -Iinclude \; 2> clang-tidy-report.txt || true
 
       - name: Check Clang-Format compliance
         run: |
-          find . -path ./BTS/Tests -prune -o -path ./UE/Tests -prune -o -path ./COMMON/Tests -prune -o \( -name '*.cpp' -or -name '*.h' \) | xargs clang-format --dry-run --Werror
+          find BTS UE COMMON -path '*/Tests' -prune -o \( -name '*.cpp' -or -name '*.h' \) | xargs clang-format --dry-run --Werror
 
       - name: Upload Clang-Tidy Report
         uses: actions/upload-artifact@v4
