@@ -21,6 +21,8 @@ jobs:
       run: which 7z || echo "7z is missing"
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
+      with:
+        cache: false
     - name: cmake
       run: cmake .
     - name: make all targets
