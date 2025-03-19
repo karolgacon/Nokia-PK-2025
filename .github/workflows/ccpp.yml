@@ -17,8 +17,8 @@ jobs:
         
     steps:
     - uses: actions/checkout@v2
-    - name: Check if Qt archive exists
-      run: ls -lah /home/runner/work/Nokia-PK-2025/Qt
+    - name: Check for 7z
+      run: which 7z || echo "7z is missing"
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
