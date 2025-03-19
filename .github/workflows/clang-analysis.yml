@@ -30,7 +30,7 @@ jobs:
           find . -name '*.cpp' -or -name '*.h' | xargs clang-format --dry-run --Werror
 
       - name: Upload Clang-Tidy Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: clang-tidy-report
           path: src/clang-tidy-report.txt
