@@ -17,8 +17,18 @@ jobs:
         
     steps:
     - uses: actions/checkout@v2
-    - name: Check for 7z
-      run: which 7z || echo "7z is missing"
+    - name: Run C++ Linter
+      uses: cpp-linter/cpp-linter-action@v2
+      id: linter
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        style: 'file'
+        tidy-checks: ''
+        thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+    - name: Fail fast if linting fails
+      if: steps.linter.outputs.checks-failed > 0
+      run: exit 1
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
