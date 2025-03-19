@@ -16,9 +16,6 @@ jobs:
         working-directory: src
         
     steps:
-    - name: Remove broken LLVM repository
-      run: sudo rm -f /etc/apt/sources.list.d/llvm-toolchain-noble.list
-
     - name: Update system packages
       run: sudo apt-get update
 
