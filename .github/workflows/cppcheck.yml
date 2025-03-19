@@ -14,5 +14,5 @@ jobs:
 
       - name: Run cppcheck
         run: |
-          cppcheck --enable=all --inconclusive --std=c++17 --suppress=missingInclude src/UE/Application src/UE/main.cpp 2> >(tee cppcheck.log)
+          cppcheck --enable=all --inconclusive --std=c++17 -I/usr/include/c++/x.x.x --suppress=missingIncludeSystem src/UE/Application src/UE/main.cpp 2> >(tee cppcheck.log)
           [ ! -s cppcheck.log ]
