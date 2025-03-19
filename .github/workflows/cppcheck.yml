@@ -1,37 +1,18 @@
-name: Clang-Tidy & Clang-Format Analysis
+name: Cppcheck
 
-on:
-  push:
-    branches: "**"
-  pull_request:
-    branches: "**"
+on: [push]
 
 jobs:
-  static-analysis:
-    name: Clang-Tidy & Clang-Format
+  build:
+
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: src
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Install cppcheck
+        run: sudo apt install cppcheck
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy clang-format
-
-      - name: Run Clang-Tidy
+      - name: Run cppcheck
         run: |
-          find BTS UE COMMON -path '*/Tests' -prune -o \( -name '*.cpp' -or -name '*.hpp' \) -exec clang-tidy {} -- -Iinclude \; 2> clang-tidy-report.txt || true
-
-      - name: Check Clang-Format compliance
-        run: |
-          find BTS UE COMMON -path '*/Tests' -prune -o \( -name '*.cpp' -or -name '*.hpp' \) | xargs clang-format --dry-run --Werror
-
-      - name: Upload Clang-Tidy Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: clang-tidy-report
-          path: src/clang-tidy-report.txt
+          cppcheck --enable=all --inconclusive --std=c++17 --suppress=missingInclude UE/Application UE/main.cpp 2> >(tee cppcheck.log)
+          [ ! -s cppcheck.log ]
