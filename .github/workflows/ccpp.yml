@@ -26,15 +26,19 @@ jobs:
         style: 'file'
         tidy-checks: ''
         thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
+
     - name: Fail fast if linting fails
       if: steps.linter.outputs.checks-failed > 0
       run: exit 1
+
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
       with:
         cache: false
+
     - name: cmake
       run: cmake .
+      
     - name: make all targets
       run: make all
 
