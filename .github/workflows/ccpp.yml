@@ -16,6 +16,12 @@ jobs:
         working-directory: src
         
     steps:
+    - name: Remove broken LLVM repository
+      run: sudo rm -f /etc/apt/sources.list.d/llvm-toolchain-noble.list
+
+    - name: Update system packages
+      run: sudo apt-get update
+
     - uses: actions/checkout@v2
     - name: Run C++ Linter
       uses: cpp-linter/cpp-linter-action@v2
@@ -38,7 +44,6 @@ jobs:
 
     - name: cmake
       run: cmake .
-      
     - name: make all targets
       run: make all
 
