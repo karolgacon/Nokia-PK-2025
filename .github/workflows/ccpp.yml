@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [master, dev]
+    branches: [ master, dev]
   pull_request:
-    branches: [master, dev]
+    branches: [ master, dev ]
 
 jobs:
   build:
@@ -14,31 +14,35 @@ jobs:
       run:
         shell: bash
         working-directory: src
-        
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v2
-      with:
-        cache: false
+      - uses: actions/checkout@v2
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+      - name: cmake
+        run: cmake .
+      - name: make all targets
+        run: make all
 
-    - name: cmake
-      run: cmake .
-    - name: make all targets
-      run: make all
 
-    - name: UT for BtsApplication
-      run: make BtsApplicationUT 
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy cmake ninja-build
 
-    - name: run BTS ut
-      run: ./BTS/Tests/Application/BtsApplicationUT
+      - name: Configure CMake
+        run: |
+          cmake -S ./UE -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
 
-    - name: UT for COMMON
-      run: make COMMON_UT
+      - name: Run Clang-Tidy
+        run: clang-tidy -p build $(find . -name '*.cpp' -or -name '*.h')
 
-    - name: UT for UeApplication
-      run: make UeApplicationUT
+      - name: UT for BtsApplication
+        run: make BtsApplicationUT
 
-    - name: Next Steps
-      run: echo "Add your next steps here"
+      - name: run BTS ut
+        run: ./BTS/Tests/Application/BtsApplicationUT
 
+      - name: UT for COMMON
+        run: make COMMON_UT
+
+      - name: UT for UeApplication
+        run: make UeApplicationUT
