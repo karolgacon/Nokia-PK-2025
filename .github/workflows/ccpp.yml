@@ -31,9 +31,9 @@ jobs:
       uses: HorstBaerbel/action-clang-tidy@1.2
       # These are optional (defaults displayed)
       with:
-        scandir: '.'
-        builddir: 'build/UE'
-        excludedirs: ''
+        scandir: "./UE"
+        builddir: "build/UE"
+        excludedirs: "COMMON,EXAMPLES"
         extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
         cmakeoptions: ''
     - name: UT for BtsApplication
