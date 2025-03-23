@@ -16,23 +16,29 @@ jobs:
         working-directory: src
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v2
-      - name: cmake
-        run: cmake .
-      - name: make all targets
-        run: make all
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy cmake ninja-build
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy cmake ninja-build pkg-config
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: 5.15.2
+          cache: true
+
+      - name: Export Qt paths
+        run: |
+          echo "CMAKE_PREFIX_PATH=$Qt5_DIR" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$Qt5_DIR/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$Qt5_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
 
       - name: Configure CMake
-        run: |
-          cmake -S ./UE -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
+        run: cmake -S ./UE -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
 
       - name: Run Clang-Tidy
-        run: clang-tidy -p build $(find . -name '*.cpp' -or -name '*.h')
+        run: clang-tidy -p build $(find ./UE -name '*.cpp' -or -name '*.h')
 
       - name: UT for BtsApplication
         run: make BtsApplicationUT
