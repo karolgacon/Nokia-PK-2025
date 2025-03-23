@@ -9,7 +9,6 @@ set(UE_APPENV_DIR ${UE_DIR}/ApplicationEnvironment)
 set(UE_QTAPPENV_DIR ${UE_DIR}/QtApplicationEnvironment)
 set(COMMON_DIR ${UE_DIR}/../COMMON)
 
-include(set_qt_options.cmake)
 include_directories(${UE_APP_DIR})
 include_directories(${UE_APPENV_DIR})
 include_directories(${COMMON_DIR})
