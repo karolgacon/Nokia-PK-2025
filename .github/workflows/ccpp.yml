@@ -24,9 +24,6 @@ jobs:
     - name: make all targets
       run: make all
 
-    - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y clang-tidy
-
     - name: Run clang-tidy
       uses: HorstBaerbel/action-clang-tidy@1.2
       # These are optional (defaults displayed)
