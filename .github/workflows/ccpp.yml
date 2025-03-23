@@ -27,9 +27,15 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y clang-tidy
 
-    - name: Run Clang-Tidy
-      run: clang-tidy -p build $(find ./UE -name '*.cpp' -or -name '*.h')
-
+    - name: Run clang-tidy
+      uses: HorstBaerbel/action-clang-tidy@1.2
+      # These are optional (defaults displayed)
+      with:
+        scandir: '.'
+        builddir: 'build/UE'
+        excludedirs: ''
+        extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
+        cmakeoptions: ''
     - name: UT for BtsApplication
       run: make BtsApplicationUT
 
