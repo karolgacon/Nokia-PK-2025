@@ -25,7 +25,7 @@ jobs:
         cache: false
 
     - name: cmake
-      run: cmake .
+      run: cmake . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_SUPPRESS_DEVELOPER_WARNINGS=TRUE -DCMAKE_CXX_FLAGS="-w"
     - name: make all targets
       run: make all
 
