@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ master, dev ]
+    branches: [master, dev]
   pull_request:
-    branches: [ master, dev ]
+    branches: [master, dev]
 
 jobs:
   build:
@@ -16,41 +16,34 @@ jobs:
         working-directory: src
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - name: Remove existing Qt directory
+      run: rm -rf /home/runner/work/Nokia-PK-2025/Qt/
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v2
+      with:
+        cache: false
 
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy cmake ninja-build pkg-config
+    - name: cmake
+      run: cmake .
+    - name: make all targets
+      run: make all
 
-      - name: Remove existing Qt directory
-        run: rm -rf /home/runner/work/Nokia-PK-2025/Qt/
+    - name: Install dependencies
+      run: sudo apt-get update && sudo apt-get install -y clang-tidy cmake ninja-build
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v2
-        with:
-          version: 5.15.2
-          cache: false
+    - name: Run Clang-Tidy
+      run: clang-tidy -p build $(find ./UE -name '*.cpp' -or -name '*.h')
 
-      - name: Export Qt paths
-        run: |
-          echo "CMAKE_PREFIX_PATH=$Qt5_DIR" >> $GITHUB_ENV
-          echo "LD_LIBRARY_PATH=$Qt5_DIR/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=$Qt5_DIR/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+    - name: UT for BtsApplication
+      run: make BtsApplicationUT
 
-      - name: Configure CMake
-        run: cmake -S ./UE -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja
+    - name: run BTS ut
+      run: ./BTS/Tests/Application/BtsApplicationUT
 
-      - name: Run Clang-Tidy
-        run: clang-tidy -p build $(find ./UE -name '*.cpp' -or -name '*.h')
+    - name: UT for COMMON
+      run: make COMMON_UT
 
-      - name: UT for BtsApplication
-        run: make BtsApplicationUT
+    - name: UT for UeApplication
+      run: make UeApplicationUT
 
-      - name: run BTS ut
-        run: ./BTS/Tests/Application/BtsApplicationUT
-
-      - name: UT for COMMON
-        run: make COMMON_UT
-
-      - name: UT for UeApplication
-        run: make UeApplicationUT
