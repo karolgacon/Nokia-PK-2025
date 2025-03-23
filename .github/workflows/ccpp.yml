@@ -31,7 +31,7 @@ jobs:
       uses: HorstBaerbel/action-clang-tidy@1.2
       # These are optional (defaults displayed)
       with:
-        scandir: "./UE"
+        scandir: "src"
         builddir: "build/UE"
         excludedirs: "COMMON,EXAMPLES"
         extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
