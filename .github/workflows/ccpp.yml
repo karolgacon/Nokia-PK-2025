@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, dev]
   pull_request:
-    branches: [ master ]
+    branches: [master, dev]
 
 jobs:
   build:
@@ -14,18 +14,26 @@ jobs:
       run:
         shell: bash
         working-directory: src
-        
+
     steps:
     - uses: actions/checkout@v2
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
     - name: cmake
-      run: cmake .
+      run: cmake . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_SUPPRESS_DEVELOPER_WARNINGS=TRUE -DCMAKE_CXX_FLAGS="-w"
     - name: make all targets
       run: make all
 
+#    - name: Run clang-tidy
+#      uses: HorstBaerbel/action-clang-tidy@1.2
+#      with:
+#        scandir: "src"
+#        builddir: "build/UE"
+#        excludedirs: "COMMON,EXAMPLES"
+#        extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
+#        cmakeoptions: ''
     - name: UT for BtsApplication
-      run: make BtsApplicationUT 
+      run: make BtsApplicationUT
 
     - name: run BTS ut
       run: ./BTS/Tests/Application/BtsApplicationUT
@@ -35,7 +43,4 @@ jobs:
 
     - name: UT for UeApplication
       run: make UeApplicationUT
-
-    - name: Next Steps
-      run: echo "Add your next steps here"
 
