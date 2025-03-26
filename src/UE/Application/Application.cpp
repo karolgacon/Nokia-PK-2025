@@ -10,7 +10,7 @@ Application::Application(common::PhoneNumber phoneNumber,
                          IUserPort &user,
                          ITimerPort &timer)
     : context{iLogger, bts, user, timer},
-      logger(iLogger, "[APP] ")
+    logger(iLogger, "[APP] ")
 {
     logger.logInfo("Started");
     context.setState<NotConnectedState>();
@@ -19,7 +19,7 @@ Application::Application(common::PhoneNumber phoneNumber,
 Application::~Application()
 {
     logger.logInfo("Stopped");
-}
+}// 500ms timeout as per requirements
 
 void Application::handleTimeout()
 {
@@ -39,6 +39,12 @@ void Application::handleAttachAccept()
 void Application::handleAttachReject()
 {
     context.state->handleAttachReject();
+}
+
+void Application::handleDisconnected()
+{
+    logger.logInfo("Transport disconnected");
+    context.state->handleDisconnected();
 }
 
 }
