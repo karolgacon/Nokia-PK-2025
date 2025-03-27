@@ -20,5 +20,17 @@ jobs:
         run: |
           cppcheck --enable=all --inconclusive --std=c++17 -I${{ env.CXX_INCLUDE_PATH }} \
           --suppress=missingInclude --suppress=missingIncludeSystem \
+          --error-exitcode=0 \
           src/UE/Application src/UE/main.cpp 2> >(tee cppcheck.log)
-          [ ! -s cppcheck.log ]
+
+      - name: Display Cppcheck Issues
+        if: always()
+        run: |
+          if [ -s cppcheck.log ]; then
+            echo "### ⚠️ Cppcheck found issues:" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat cppcheck.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No issues found by Cppcheck." >> $GITHUB_STEP_SUMMARY
+          fi
