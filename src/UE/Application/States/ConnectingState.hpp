@@ -17,6 +17,7 @@ public:
 
 private:
     common::BtsId btsId;
+
 };
 
 }
