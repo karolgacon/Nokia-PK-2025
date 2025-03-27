@@ -26,11 +26,12 @@ jobs:
       - name: Display Cppcheck Issues
         if: always()
         run: |
-          if [ -s cppcheck.log ]; then
+          if grep -q "error\|warning" cppcheck.log; then
             echo "### ⚠️ Cppcheck found issues:" >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
-            cat cppcheck.log >> $GITHUB_STEP_SUMMARY
+            grep "error\|warning" cppcheck.log >> $GITHUB_STEP_SUMMARY
             echo '```' >> $GITHUB_STEP_SUMMARY
           else
             echo "✅ No issues found by Cppcheck." >> $GITHUB_STEP_SUMMARY
           fi
+
