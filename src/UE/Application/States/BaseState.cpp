@@ -5,7 +5,7 @@ namespace ue
 
 BaseState::BaseState(Context &context, const std::string &name)
     : context(context),
-      logger(context.logger, "[" + name + "]")
+    logger(context.logger, "[" + name + "]")
 {
     logger.logDebug("entry");
 }
@@ -33,6 +33,12 @@ void BaseState::handleAttachAccept()
 void BaseState::handleAttachReject()
 {
     logger.logError("Uexpected: handleAttachReject");
+}
+
+void BaseState::handleDisconnected()
+{
+    logger.logError("Uexpected: handleDisconnected");
+
 }
 
 }

@@ -8,7 +8,10 @@ namespace ue
 class ConnectedState : public BaseState
 {
 public:
-    explicit ConnectedState(Context& context);
+    explicit ConnectedState(Context &context);
+
+    void handleDisconnected() override;
+
 };
 
 }
