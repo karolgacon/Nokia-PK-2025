@@ -1,5 +1,10 @@
 #include "Sms.hpp"
 
+Sms::Sms()
+{
+    textMessage = "123 test 321";
+}
+
 Sms::Sms(const std::string &textMessage,
          const common::PhoneNumber &from,
          const common::PhoneNumber &to,

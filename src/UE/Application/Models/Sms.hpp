@@ -14,6 +14,8 @@ private:
     std::chrono::time_point<std::chrono::system_clock> messageReceived;
 
 public:
+    Sms();
+
     Sms(const std::string &textMessage, const common::PhoneNumber &from, const common::PhoneNumber &to, bool read, const std::chrono::time_point<std::chrono::system_clock> &receive);
 
     const common::PhoneNumber &getFrom() const;
