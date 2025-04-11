@@ -51,7 +51,14 @@
                     handler->handleAttachReject();
                 break;
             }
+            case common::MessageId::Sms:
+                {
+                    std::string msgText = reader.readRemainingText();
+                    handler->handleSmsReceive(from, msgText);
+                    break;
+                }
             //TODO: add more cases here
+
             default:
                 logger.logError("unknow message: ", msgId, ", from: ", from);
 

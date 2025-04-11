@@ -1,23 +1,33 @@
 #include "SmsDatabase.hpp"
-#include <Messages/PhoneNumber.hpp>
 
+namespace ue {
 
-SmsDatabase::SmsDatabase() {}
-
-void SmsDatabase::addSms(std::string) {
-    smsList.push_back(Sms());
-}
-
-std::vector<Sms> SmsDatabase::getSmsList() {
-    return smsList;
-}
-
-std::optional<Sms> SmsDatabase::retrieveSms(int index) {
-    if (index >= 0 && index < static_cast<int>(smsList.size())) {
-        smsList[index].markAsRead();
-        return smsList[index];
+    std::size_t SmsDatabase::addSms(common::PhoneNumber from, const std::string& text) {
+        messages.emplace_back(from, text, false);
+        return messages.size() - 1;
     }
 
-    return std::nullopt;
-}
+    const std::vector<SmsMessage>& SmsDatabase::getAllSms() const {
+        return messages;
+    }
 
+    bool SmsDatabase::markAsRead(std::size_t index) {
+        if (index >= messages.size()) {
+            return false;
+        }
+
+        messages[index].isRead = true;
+        return true;
+    }
+
+    std::size_t SmsDatabase::getUnreadCount() const {
+        std::size_t unread = 0;
+        for (const auto& msg : messages) {
+            if (!msg.isRead) {
+                ++unread;
+            }
+        }
+        return unread;
+    }
+
+} // namespace ue

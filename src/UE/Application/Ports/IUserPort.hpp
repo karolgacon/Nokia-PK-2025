@@ -19,10 +19,12 @@ public:
     virtual void showNotConnected() = 0;
     virtual void showConnecting() = 0;
     virtual void showConnected() = 0;
+    virtual void showSms() = 0;
 
     //virtual void showSmsList() = 0;
-    //virtual void showSms(int index) = 0;
     //virtual SmsDatabase& getSmsDatabase() = 0;
+
+    // consider more
 
     //TODO: here
 };

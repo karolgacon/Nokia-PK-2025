@@ -33,9 +33,8 @@ public:
     void handleAttachReject() override;
     void handleDisconnected() override;
 
-    // Sms
-
-    //void handleSmsReceive(uint8_t action, std::string text) override;
+    // Sms interface
+    void handleSmsReceive(common::PhoneNumber from, std::string messageText) override;
 
 private:
     Context context;

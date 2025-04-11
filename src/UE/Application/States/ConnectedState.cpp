@@ -17,4 +17,16 @@ void ConnectedState::handleDisconnected()
     context.setState<NotConnectedState>();
 }
 
+void ConnectedState::handleSmsReceive(common::PhoneNumber from, std::string messageText)
+{
+    logger.logInfo("SMS received from: ", from, ", with text: ", messageText);
+
+    std::size_t smsIndex = context.smsDatabase.addSms(from, messageText);
+    logger.logDebug("SMS stored at index: ", smsIndex);
+
+    context.user.showSms();
+}
+
+
+
 }
