@@ -33,6 +33,10 @@ public:
     void handleAttachReject() override;
     void handleDisconnected() override;
 
+    // ui related
+    void handleUiAction(std::optional<std::size_t> ind) override;
+    void handleUiBack() override;
+
     // Sms interface
     void handleSmsReceive(common::PhoneNumber from, std::string messageText) override;
 

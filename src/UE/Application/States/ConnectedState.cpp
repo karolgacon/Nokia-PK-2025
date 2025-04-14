@@ -1,5 +1,6 @@
 #include "ConnectedState.hpp"
 #include "NotConnectedState.hpp"
+#include "ViewingSmsListState.hpp"
 
 namespace ue
 {
@@ -7,24 +8,66 @@ namespace ue
 ConnectedState::ConnectedState(Context &context)
     : BaseState(context, "ConnectedState")
 {
-    logger.logInfo("Connected state entered");
+    logger.logInfo("Entered ConnectedState");
     context.user.showConnected();
 }
 
 void ConnectedState::handleDisconnected()
 {
-    logger.logInfo("Connection to BTS lost");
+    logger.logInfo("Lost connection with BTS – switching to NotConnectedState");
     context.setState<NotConnectedState>();
 }
 
 void ConnectedState::handleSmsReceive(common::PhoneNumber from, std::string messageText)
 {
-    logger.logInfo("SMS received from: ", from, ", with text: ", messageText);
+    logger.logInfo("Incoming SMS from ", from);
+    const std::size_t newIndex = context.smsDatabase.addSms(from, std::move(messageText));
 
-    std::size_t smsIndex = context.smsDatabase.addSms(from, messageText);
-    logger.logDebug("SMS stored at index: ", smsIndex);
+    logger.logDebug("Saved new SMS at index ", newIndex);
+    context.user.showSms(); // triggers notification in UI
+}
 
-    context.user.showSms();
+void ConnectedState::showMenu()
+{
+    logger.logInfo("(Re-showing) Menu");
+    context.user.showConnected();
+}
+
+void ConnectedState::handleUiAction(std::optional<std::size_t> selectedIndex)
+{
+    if (!selectedIndex)
+    {
+        logger.logInfo("No menu item selected - ignoring");
+        return;
+    }
+
+    const std::size_t index = *selectedIndex;
+    logger.logInfo("Main Menu selection index: ", index);
+
+    switch (index)
+    {
+    case 0:
+        logger.logInfo("User chose: Create New SMS (not implemented)");
+        //TODO context.setState<ComposingSmsState>();
+        break;
+    case 1:
+        logger.logInfo("User chose: Open SMS Inbox");
+        context.setState<ViewingSmsListState>();
+        break;
+    default:
+        logger.logInfo("Unexpected menu index: ", index);
+        break;
+    }
+}
+
+void ConnectedState::handleUiBack()
+{
+    logger.logInfo("Back button pressed on main menu – no action defined");
+}
+
+void ConnectedState::handleSib(common::BtsId btsId)
+{
+    logger.logInfo("Ignoring SIB in ConnectedState from BTS: ", btsId);
 }
 
 

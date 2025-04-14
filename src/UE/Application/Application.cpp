@@ -1,5 +1,6 @@
 #include "Application.hpp"
 #include "States/NotConnectedState.hpp"
+#include "States/ConnectedState.hpp"
 
 namespace ue
 {
@@ -23,35 +24,70 @@ Application::~Application()
 
 void Application::handleTimeout()
 {
-    context.state->handleTimeout();
+    if (context.state)
+        context.state->handleTimeout();
+    else
+        logger.logError("handleTimeout called with no active state!");
 }
 
 void Application::handleSib(common::BtsId btsId)
 {
-    context.state->handleSib(btsId);
+    if (context.state)
+        context.state->handleSib(btsId);
+    else
+        logger.logError("handleSib called with no active state!");
 }
 
 void Application::handleAttachAccept()
 {
-    context.state->handleAttachAccept();
+    if (context.state)
+        context.state->handleAttachAccept();
+    else
+        logger.logError("handleAttachAccept called with no active state!");
 }
 
 void Application::handleAttachReject()
 {
-    context.state->handleAttachReject();
+    if (context.state)
+        context.state->handleAttachReject();
+    else
+        logger.logError("handleDisconnected called with no active state!");
 }
 
 void Application::handleDisconnected()
 {
     logger.logInfo("Transport disconnected");
-    context.state->handleDisconnected();
+    if (context.state)
+        context.state->handleDisconnected();
+    else
+        logger.logError("handleDisconnected called with no active state!");
 }
 
 void Application::handleSmsReceive(common::PhoneNumber from, std::string messageText)
 {
     logger.logInfo("SMS received from number: ", from);
 
-    context.state->handleSmsReceive(from,  messageText);
+    if (context.state)
+        context.state->handleSmsReceive(from,  messageText);
+    else
+        logger.logError("handleSmsReceive called with no active state!");
+}
+
+void Application::handleUiAction(std::optional<std::size_t> ind)
+{
+    if (context.state)
+        context.state->handleUiAction(ind);
+    else
+        logger.logError("handleUiAction called with no active state!");
+
+}
+
+void Application::handleUiBack()
+{
+    if (context.state)
+        context.state->handleUiBack();
+    else
+        logger.logError("handleUiBack called with no active state!");
 }
 
 }

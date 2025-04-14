@@ -19,10 +19,21 @@ int main(int argc, char* argv[])
     UserPort user(logger, gui, phoneNumber);
     TimerPort timer(logger);
     Application app(phoneNumber, logger, bts, user, timer);
+
     bts.start(app);
     user.start(app);
     timer.start(app);
+
+    // SIMULATION  -  manual bts connection
+    app.handleSib(common::BtsId{1});
+    app.handleAttachAccept();
+
+    // TEST  -  receive
+    app.handleSmsReceive(common::PhoneNumber{122}, "Hello test z BTS");
+    app.handleSmsReceive(common::PhoneNumber{45}, "Second message!");
+
     appEnv->startMessageLoop();
+
     bts.stop();
     user.stop();
     timer.stop();

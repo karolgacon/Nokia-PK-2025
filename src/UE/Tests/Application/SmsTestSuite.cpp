@@ -57,4 +57,4 @@ namespace ue {
         EXPECT_EQ(db.getUnreadCount(), 0u);
     }
 
-} // namespace ue
+}
