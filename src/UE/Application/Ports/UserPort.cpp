@@ -47,6 +47,8 @@ void UserPort::showConnected()
     logger.logInfo("Displaying Main Menu");
     auto& menu = gui.setListViewMode();
     menu.clearSelectionList();
+    menu.addSelectionListItem("Compose SMS", "Write new SMS");
+    menu.addSelectionListItem("View SMS", "Check received messages");
     gui.showConnected();
 }
 

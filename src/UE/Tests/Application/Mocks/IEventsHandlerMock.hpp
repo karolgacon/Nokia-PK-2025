@@ -23,6 +23,10 @@ namespace ue
         // UI event mocks (custom handlers)
         MOCK_METHOD(void, handleUiAction, (std::optional<std::size_t> ind), (override));
         MOCK_METHOD(void, handleUiBack, (), (override));
+
+        // MISSING ONES (add these!)
+        MOCK_METHOD(void, handleSmsSent, (common::PhoneNumber to, bool succeed), (override));
+        MOCK_METHOD(void, handleSmsCompose, (common::PhoneNumber to, const std::string& textMessage), (override));
     };
 
 } // namespace ue
