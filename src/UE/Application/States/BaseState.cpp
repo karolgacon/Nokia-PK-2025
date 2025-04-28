@@ -56,4 +56,14 @@ namespace ue
         logger.logError("Unexpected UI back action");
     }
 
+    void BaseState::handleSmsSent(common::PhoneNumber to, bool succeed)
+    {
+        logger.logError("Unexpected: handleSmsSentResult for: ", to, ", Success: ", succeed);
+    }
+
+    void BaseState::handleSmsCompose(common::PhoneNumber to, const std::string &textMessage)
+    {
+        logger.logError("Unexpected: handleSmsComposeResult for: ", to, ", text: ", textMessage);
+    }
+
 }

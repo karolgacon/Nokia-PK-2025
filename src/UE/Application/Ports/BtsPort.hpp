@@ -21,12 +21,13 @@ private:
     void handleMessage(BinaryMessage msg);
     void handleDisconnected();
 
-
     common::PrefixedLogger logger;
     common::ITransport& transport;
     common::PhoneNumber phoneNumber;
 
     IBtsEventsHandler* handler = nullptr;
+
+    void sendSms(common::PhoneNumber to, const std::string& textMessage) override;
 };
 
 }

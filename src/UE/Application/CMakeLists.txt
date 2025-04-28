@@ -20,6 +20,7 @@ set(APPLICATION_SOURCES
         States/NotConnectedState.cpp
         States/ViewingSmsListState.cpp
         States/ViewingSmsState.cpp
+        States/ComposingSmsState.cpp
 )
 
 #add_library(${PROJECT_NAME} ${SRC_LIST})

@@ -23,9 +23,9 @@ public:
     virtual void showSmsList(const std::vector<SmsMessage>& textMessages) = 0;
     virtual void showSmsView(const SmsMessage& textMessage) = 0;
     virtual void showAlert(const std::string& title, const std::string& textMessage) = 0;
-    //virtual SmsDatabase& getSmsDatabase() = 0;
-
-    // consider more
+    virtual void showSmsCompose() = 0;
+    virtual common::PhoneNumber getSmsRecipient() = 0;
+    virtual std::string getSmsTextMessage() = 0;
 
     //TODO: here
 };
