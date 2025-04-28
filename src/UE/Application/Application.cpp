@@ -82,6 +82,21 @@ void Application::handleUiAction(std::optional<std::size_t> ind)
 
 }
 
+void Application::handleSmsSent(common::PhoneNumber to, bool succeed)
+{
+    logger.logInfo("Handling sms sending to: ", to, ", Success: ", succeed);
+    if (context.state)
+        context.state->handleSmsSent(to, succeed);
+}
+
+void Application::handleSmsCompose(common::PhoneNumber to, const std::string &textMessage)
+{
+    context.smsDatabase.addOutgoingSms(to, textMessage);
+    context.bts.sendSms(to, textMessage);
+
+    context.setState<ConnectedState>();
+}
+
 void Application::handleUiBack()
 {
     if (context.state)

@@ -15,6 +15,7 @@ namespace ue
         void handleDisconnected() override;
         void handleSmsReceive(common::PhoneNumber from, std::string messageText) override;
         void handleSib(common::BtsId btsId) override;
+
     private:
         void showList();
         std::vector<SmsMessage> currentSmsList;

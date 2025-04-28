@@ -24,14 +24,6 @@ int main(int argc, char* argv[])
     user.start(app);
     timer.start(app);
 
-    // SIMULATION  -  manual bts connection
-    app.handleSib(common::BtsId{1});
-    app.handleAttachAccept();
-
-    // TEST  -  receive
-    app.handleSmsReceive(common::PhoneNumber{122}, "Hello test z BTS");
-    app.handleSmsReceive(common::PhoneNumber{45}, "Second message!");
-
     appEnv->startMessageLoop();
 
     bts.stop();

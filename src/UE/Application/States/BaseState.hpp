@@ -26,6 +26,8 @@ public:
     // User-triggered events
     void handleUiAction(std::optional<std::size_t> ind) override;
     void handleUiBack() override;
+    void handleSmsSent(common::PhoneNumber to, bool succeed) override;
+    void handleSmsCompose(common::PhoneNumber to, const std::string& textMessage) override;
 
 protected:
     Context& context;

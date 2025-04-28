@@ -13,6 +13,7 @@ public:
     void handleSmsReceive(common::PhoneNumber from, std::string messageText) override;
     void handleUiAction(std::optional<std::size_t> selectedIndex) override;
     void handleUiBack() override;
+    void handleSmsSent(common::PhoneNumber to, bool succeed) override;
 
     void handleSib(common::BtsId) override;
 private:

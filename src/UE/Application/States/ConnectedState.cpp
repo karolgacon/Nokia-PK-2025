@@ -21,7 +21,7 @@ void ConnectedState::handleDisconnected()
 void ConnectedState::handleSmsReceive(common::PhoneNumber from, std::string messageText)
 {
     logger.logInfo("Incoming SMS from ", from);
-    const std::size_t newIndex = context.smsDatabase.addSms(from, std::move(messageText));
+    const std::size_t newIndex = context.smsDatabase.addIncomingSms(from, std::move(messageText));
 
     logger.logDebug("Saved new SMS at index ", newIndex);
     context.user.showSms(); // triggers notification in UI
@@ -57,6 +57,17 @@ void ConnectedState::handleUiAction(std::optional<std::size_t> selectedIndex)
     default:
         logger.logInfo("Unexpected menu index: ", index);
         break;
+    }
+}
+
+void ConnectedState::handleSmsSent(common::PhoneNumber to, bool succeed)
+{
+    logger.logInfo("Received sms sending for ", to, " while in main menu. Success: ", succeed);
+    if (!succeed) {
+        if (!context.smsDatabase.markLastOutgoingAsFailed()) {
+            logger.logInfo("Cant mark last outgoing SMS  as failed.");
+        }
+        context.user.showAlert("SMS Failed", "Could not send SMS to " + common::to_string(to));
     }
 }
 

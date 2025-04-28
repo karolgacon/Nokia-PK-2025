@@ -39,6 +39,8 @@ public:
 
     // Sms interface
     void handleSmsReceive(common::PhoneNumber from, std::string messageText) override;
+    void handleSmsSent(common::PhoneNumber to, bool succeed) override;
+    void handleSmsCompose(common::PhoneNumber to, const std::string& textMessage) override;
 
 private:
     Context context;

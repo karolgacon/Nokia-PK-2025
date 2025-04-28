@@ -3,39 +3,52 @@
 #include "Messages/PhoneNumber.hpp"
 #include <string>
 #include <vector>
+#include <optional>
 
 namespace ue {
 
     /**
-     * @brief Structure representing a single SMS message
+     * @brief Structure representing a single SMS message.
      */
-    struct SmsMessage {
-        common::PhoneNumber from;
-        std::string text;
-        bool isRead;
+    struct SmsMessage
+    {
+        enum class Direction { Incoming, Outgoing };
+        enum class Status { ReceivedUnread, ReceivedRead, Sent, Failed };
 
-        SmsMessage(common::PhoneNumber sender, std::string content, bool read = false)
-            : from(sender), text(std::move(content)), isRead(read) {}
+        common::PhoneNumber contact;
+        std::string body;
+        Direction direction;
+        Status status;
+
+        SmsMessage(common::PhoneNumber from, std::string bodyText)
+            : contact(from), body(std::move(bodyText)), direction(Direction::Incoming), status(Status::ReceivedUnread)
+        {}
+
+        SmsMessage(common::PhoneNumber to, std::string bodyText, Status initialStatus)
+            : contact(to), body(std::move(bodyText)), direction(Direction::Outgoing), status(initialStatus)
+        {}
     };
 
-    class SmsDatabase {
+    /**
+     * @brief Class responsible for managing SMS storage.
+     */
+    class SmsDatabase
+    {
     public:
         SmsDatabase() = default;
 
-        // Add a new SMS to the database
-        std::size_t addSms(common::PhoneNumber from, const std::string& text);
+        std::size_t addIncomingSms(common::PhoneNumber sender, const std::string& content);
+        std::size_t addOutgoingSms(common::PhoneNumber receiver, const std::string& content, SmsMessage::Status initialStatus = SmsMessage::Status::Sent);
 
-        // Get all SMS messages
-        const std::vector<SmsMessage>& getAllSms() const;
+        bool markAsRead(std::size_t smsIndex);
+        bool markLastOutgoingAsFailed();
 
-        // Mark an SMS as read
-        bool markAsRead(std::size_t index);
-
-        // Get number of unread messages
-        std::size_t getUnreadCount() const;
+        const std::vector<SmsMessage>& fetchAllMessages() const;
+        std::size_t countUnreadMessages() const;
 
     private:
-        std::vector<SmsMessage> messages;
+        std::vector<SmsMessage> smsStorage;
+        std::optional<std::size_t> lastOutgoingIndex;
     };
 
 } // namespace ue

@@ -57,10 +57,18 @@
                     handler->handleSmsReceive(from, msgText);
                     break;
                 }
+            case common::MessageId::UnknownRecipient:
+                {
+                    auto originalRecipient = reader.readPhoneNumber();
+                    logger.logError("SMS sending failed - Unknown recipient: ", originalRecipient);
+                    if (handler)
+                        handler->handleSmsSent(originalRecipient, false);
+                    break;
+                }
             //TODO: add more cases here
 
             default:
-                logger.logError("unknow message: ", msgId, ", from: ", from);
+                logger.logError("unknown message: ", msgId, ", from: ", from);
 
             }
         }
@@ -87,8 +95,18 @@
                                     common::PhoneNumber{}};
         msg.writeBtsId(btsId);
         transport.sendMessage(msg.getMessage());
+    }
 
-
+    void BtsPort::sendSms(common::PhoneNumber to, const std::string& textMessage)
+    {
+        logger.logInfo("Sending SMS to: ", to);
+        common::OutgoingMessage msg{
+            common::MessageId::Sms,
+            phoneNumber,
+            to
+        };
+        msg.writeText(textMessage);
+        transport.sendMessage(msg.getMessage());
     }
 
 }
