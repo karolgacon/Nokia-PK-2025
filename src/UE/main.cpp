@@ -19,10 +19,13 @@ int main(int argc, char* argv[])
     UserPort user(logger, gui, phoneNumber);
     TimerPort timer(logger);
     Application app(phoneNumber, logger, bts, user, timer);
+
     bts.start(app);
     user.start(app);
     timer.start(app);
+
     appEnv->startMessageLoop();
+
     bts.stop();
     user.stop();
     timer.stop();

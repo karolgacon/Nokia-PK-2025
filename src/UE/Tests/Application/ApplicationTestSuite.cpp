@@ -9,123 +9,113 @@
 #include "Messages/PhoneNumber.hpp"
 #include <memory>
 
-namespace ue
-{
+namespace ue {
 using namespace ::testing;
 
-class ApplicationTests : public Test
-{
+class ApplicationTestSuite : public Test {
 protected:
-    const common::PhoneNumber TEST_PHONE_NUMBER{112};
-    NiceMock<common::ILoggerMock> mockLogger;
-    StrictMock<IBtsPortMock> mockBtsPort;
-    StrictMock<IUserPortMock> mockUserPort;
-    StrictMock<ITimerPortMock> mockTimerPort;
+    const common::PhoneNumber testPhoneNumber{112};
+    NiceMock<common::ILoggerMock> loggerMock;
+    StrictMock<IBtsPortMock> btsPortMock;
+    StrictMock<IUserPortMock> userPortMock;
+    StrictMock<ITimerPortMock> timerPortMock;
 
-    std::unique_ptr<Application> appInstance;
+    std::unique_ptr<Application> app;
 
     void SetUp() override {
-        // Oczekiwane działanie przy uruchomieniu aplikacji
-        EXPECT_CALL(mockUserPort, showNotConnected());
+        EXPECT_CALL(userPortMock, showNotConnected());
     }
 
-    void initializeApplication() {
-        appInstance = std::make_unique<Application>(TEST_PHONE_NUMBER,
-                                                    mockLogger,
-                                                    mockBtsPort,
-                                                    mockUserPort,
-                                                    mockTimerPort);
+    void initApp() {
+        app = std::make_unique<Application>(
+            testPhoneNumber, loggerMock, btsPortMock, userPortMock, timerPortMock);
     }
 
     void clearExpectations() {
-        // Czyścimy oczekiwania po starcie aplikacji
-        Mock::VerifyAndClearExpectations(&mockUserPort);
+        Mock::VerifyAndClearExpectations(&userPortMock);
     }
 };
 
-struct AppDisconnectedTests : ApplicationTests
-{};
-
-TEST_F(ApplicationTests, ShouldAttachToBtsOnReceivingSib)
-{
-    // Uruchamiamy aplikację
-    initializeApplication();
+TEST_F(ApplicationTestSuite, AttachesToBtsOnSibReception) {
+    initApp();
     clearExpectations();
 
-    // GIVEN - BTS wysyła SIB
-    common::BtsId testBtsId{42};
+    common::BtsId btsId{42};
 
-    // WHEN - Oczekujemy wysłania żądania przyłączenia
-    EXPECT_CALL(mockBtsPort, sendAttachRequest(testBtsId));
-    EXPECT_CALL(mockTimerPort, startTimer(std::chrono::milliseconds{500}));
-    appInstance->handleSib(testBtsId);
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    app->handleSib(btsId);
 
-    // WHEN - BTS akceptuje przyłączenie
-    EXPECT_CALL(mockTimerPort, stopTimer());
-    EXPECT_CALL(mockUserPort, showConnected());
-    appInstance->handleAttachAccept();
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
 }
 
-TEST_F(ApplicationTests, ShouldHandleAttachRejection)
-{
-    // Inicjalizacja aplikacji
-    initializeApplication();
+TEST_F(ApplicationTestSuite, HandlesAttachRejectionCorrectly) {
+    initApp();
     clearExpectations();
 
-    // GIVEN - BTS wysyła SIB
-    common::BtsId testBtsId{42};
+    common::BtsId btsId{42};
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    app->handleSib(btsId);
 
-    // WHEN - UE próbuje się połączyć
-    EXPECT_CALL(mockBtsPort, sendAttachRequest(testBtsId));
-    EXPECT_CALL(mockTimerPort, startTimer(std::chrono::milliseconds{500}));
-    appInstance->handleSib(testBtsId);
-
-    // WHEN - BTS odrzuca połączenie
-    EXPECT_CALL(mockTimerPort, stopTimer());
-    EXPECT_CALL(mockUserPort, showNotConnected());
-    appInstance->handleAttachReject();
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showNotConnected());
+    app->handleAttachReject();
 }
 
-TEST_F(ApplicationTests, ShouldHandleAttachTimeout)
-{
-    // Inicjalizacja aplikacji
-    initializeApplication();
+TEST_F(ApplicationTestSuite, HandlesAttachTimeoutProperly) {
+    initApp();
     clearExpectations();
 
-    // GIVEN - BTS wysyła SIB
-    common::BtsId testBtsId{42};
+    common::BtsId btsId{42};
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    app->handleSib(btsId);
 
-    // WHEN - UE próbuje się połączyć, ale BTS nie odpowiada
-    EXPECT_CALL(mockBtsPort, sendAttachRequest(testBtsId));
-    EXPECT_CALL(mockTimerPort, startTimer(std::chrono::milliseconds{500}));
-    appInstance->handleSib(testBtsId);
-
-    // WHEN - Upływa czas oczekiwania na odpowiedź BTS
-    EXPECT_CALL(mockTimerPort, stopTimer());
-    EXPECT_CALL(mockUserPort, showNotConnected());
-    appInstance->handleTimeout();
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showNotConnected());
+    app->handleTimeout();
 }
 
-TEST_F(ApplicationTests, ShouldHandleDisconnection)
-{
-    // Inicjalizacja aplikacji
-    initializeApplication();
+TEST_F(ApplicationTestSuite, HandlesDisconnectionAfterAttach) {
+    initApp();
     clearExpectations();
 
-    // Połączenie z BTS
-    common::BtsId testBtsId{42};
-    EXPECT_CALL(mockBtsPort, sendAttachRequest(testBtsId));
-    EXPECT_CALL(mockTimerPort, startTimer(std::chrono::milliseconds{500}));
-    appInstance->handleSib(testBtsId);
+    common::BtsId btsId{42};
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    app->handleSib(btsId);
 
-    // BTS akceptuje połączenie
-    EXPECT_CALL(mockTimerPort, stopTimer());
-    EXPECT_CALL(mockUserPort, showConnected());
-    appInstance->handleAttachAccept();
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
 
-    // UE zostaje rozłączony
-    EXPECT_CALL(mockUserPort, showNotConnected());
-    appInstance->handleDisconnected();
+    EXPECT_CALL(userPortMock, showNotConnected());
+    app->handleDisconnected();
 }
 
+TEST_F(ApplicationTestSuite, ReceivesAndDisplaysSmsProperly) {
+    initApp();
+    clearExpectations();
+
+    common::BtsId btsId{42};
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(std::chrono::milliseconds{500}));
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    Mock::VerifyAndClearExpectations(&userPortMock);
+
+    EXPECT_CALL(userPortMock, showSms());
+    app->handleSmsReceive(common::PhoneNumber{111}, "Hello from test");
+
+    EXPECT_CALL(userPortMock, showNotConnected());
+    app->handleDisconnected();
 }
+
+} // namespace ue
