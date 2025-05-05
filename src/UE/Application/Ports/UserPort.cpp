@@ -1,6 +1,6 @@
 #include "UserPort.hpp"
 #include "UeGui/IListViewMode.hpp"
-#include "UeGui/ITextMode.hpp"
+#include "UeGui/ITextMode.hpp""
 #include <string>
 
 namespace ue
@@ -18,7 +18,6 @@ void UserPort::start(IEventsHandler &handler)
     gui.setTitle("UE Nokia " + common::to_string(phoneNumber));
     gui.setAcceptCallback(std::bind(&UserPort::onAccept, this));
     gui.setRejectCallback(std::bind(&UserPort::onReject, this));
-    gui.setEnvelopeCallback(std::bind(&UserPort::onEnvelopeClicked, this));
 }
 
 void UserPort::stop()
@@ -26,7 +25,7 @@ void UserPort::stop()
     handler = nullptr;
     gui.setAcceptCallback(nullptr);
     gui.setRejectCallback(nullptr);
-    gui.setEnvelopeCallback(nullptr);
+    // gui.setEnvelopeCallback(nullptr);
 }
 
 void UserPort::showNotConnected()
@@ -47,6 +46,8 @@ void UserPort::showConnected()
     logger.logInfo("Displaying Main Menu");
     auto& menu = gui.setListViewMode();
     menu.clearSelectionList();
+    menu.addSelectionListItem("Compose SMS", "Write new SMS");
+    menu.addSelectionListItem("View SMS", "Check received messages");
     gui.showConnected();
 }
 
@@ -166,7 +167,7 @@ void UserPort::onEnvelopeClicked()
         }
 
         handler->handleSmsCompose(recipient, text);
-        gui.getSmsComposeMode().clearSmsText();
+        gui.setSmsComposeMode().clearSmsText();
     }
     else
     {
@@ -185,17 +186,18 @@ void UserPort::showSmsCompose()
 
     auto& composeMode = gui.setSmsComposeMode();
     composeMode.clearSmsText();
-    composeMode.setPhoneNumber(common::PhoneNumber{});
 }
 
 common::PhoneNumber UserPort::getSmsRecipient()
 {
-    return gui.getSmsComposeMode().getPhoneNumber();
+    auto& composeMode = gui.setSmsComposeMode();
+    return composeMode.getPhoneNumber();
 }
 
 std::string UserPort::getSmsTextMessage()
 {
-    return gui.getSmsComposeMode().getSmsText();
+    auto& composeMode = gui.setSmsComposeMode();
+    return composeMode.getSmsText();
 }
 
 } // namespace ue

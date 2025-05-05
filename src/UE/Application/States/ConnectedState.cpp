@@ -1,6 +1,7 @@
 #include "ConnectedState.hpp"
 #include "NotConnectedState.hpp"
 #include "ViewingSmsListState.hpp"
+#include "ComposingSmsState.hpp"
 
 namespace ue
 {
@@ -48,7 +49,7 @@ void ConnectedState::handleUiAction(std::optional<std::size_t> selectedIndex)
     {
     case 0:
         logger.logInfo("User chose: Create New SMS (not implemented)");
-        //TODO context.setState<ComposingSmsState>();
+        context.setState<ComposingSmsState>();
         break;
     case 1:
         logger.logInfo("User chose: Open SMS Inbox");
