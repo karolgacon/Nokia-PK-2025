@@ -1,6 +1,6 @@
 #include "UserPort.hpp"
 #include "UeGui/IListViewMode.hpp"
-#include "UeGui/ITextMode.hpp""
+#include "UeGui/ITextMode.hpp"
 #include <string>
 
 namespace ue
