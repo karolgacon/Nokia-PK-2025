@@ -24,14 +24,6 @@ jobs:
     - name: make all targets
       run: make all
 
-#    - name: Run clang-tidy
-#      uses: HorstBaerbel/action-clang-tidy@1.2
-#      with:
-#        scandir: "src"
-#        builddir: "build/UE"
-#        excludedirs: "COMMON,EXAMPLES"
-#        extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
-#        cmakeoptions: ''
     - name: UT for BtsApplication
       run: make BtsApplicationUT
 
@@ -41,6 +33,11 @@ jobs:
     - name: UT for COMMON
       run: make COMMON_UT
 
+    - name: run COMMON ut
+      run: ./COMMON/Tests/COMMON_UT
+
     - name: UT for UeApplication
       run: make UeApplicationUT
 
+    - name: run UE ut
+      run: ./UE/Tests/Application/UeApplicationUT

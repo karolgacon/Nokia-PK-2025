@@ -412,8 +412,7 @@ TEST_F(ApplicationTestSuite, shallHandleUserResignationDuringDial)
     app->handleUiBack();
 }
 
-TEST_F(ApplicationTestSuite, shallHandleResignationAndUnknownRecipient)
-{
+TEST_F(ApplicationTestSuite, shallHandleResignationAndUnknownRecipient) {
     initApp();
     clearExpectations();
     common::PhoneNumber callee{123};
@@ -448,4 +447,205 @@ TEST_F(ApplicationTestSuite, shallHandleResignationAndUnknownRecipient)
     app->handleNumberUnknown(callee);
 }
 
+TEST_F(ApplicationTestSuite, shallHandleOutgoingCallAndSendMessage)
+{
+    initApp();
+    clearExpectations();
+    common::PhoneNumber callee{123};
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, showDialCompose());
+    app->handleUiAction(2);
+
+    ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(callee));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(btsPortMock, sendCallRequest(callee));
+    EXPECT_CALL(userPortMock, showAlert(::testing::_, ::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(callee));
+    app->handleUiAction(std::nullopt);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showTalkingMobileScreen(callee));
+    app->handleAcceptCall(callee);
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, getTextFromCall()).WillOnce(Return("Hello!"));
+    EXPECT_CALL(btsPortMock, sendTalkCall(callee, "Hello!"));
+    EXPECT_CALL(userPortMock, deleteOutgoingText());
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_));
+    app->handleUiAction(std::nullopt);
+}
+
+TEST_F(ApplicationTestSuite, shallHandleOutgoingCallDroppedByUser)
+{
+    initApp();
+    clearExpectations();
+    common::PhoneNumber callee{123};
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, showDialCompose());
+    app->handleUiAction(2);
+
+    ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(callee));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(btsPortMock, sendCallRequest(callee));
+    EXPECT_CALL(userPortMock, showAlert(::testing::_, ::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(callee));
+    app->handleUiAction(std::nullopt);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showTalkingMobileScreen(callee));
+    app->handleAcceptCall(callee);
+
+    clearExpectations();
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(btsPortMock, sendCallDropped(callee));
+    EXPECT_CALL(userPortMock, showAlert("Call ended", "Call ended by user"));
+    app->handleUiBack();
+}
+
+TEST_F(ApplicationTestSuite, shallHandleOutgoingCallDroppedByRemote)
+{
+    initApp();
+    clearExpectations();
+    common::PhoneNumber callee{123};
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, showDialCompose());
+    app->handleUiAction(2);
+
+    ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(callee));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(btsPortMock, sendCallRequest(callee));
+    EXPECT_CALL(userPortMock, showAlert(::testing::_, ::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(callee));
+    app->handleUiAction(std::nullopt);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showTalkingMobileScreen(callee));
+    app->handleAcceptCall(callee);
+
+    clearExpectations();
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showAlert("Call ended", "Call ended by remote party"));
+    app->handleCallDropped(callee);
+}
+
+TEST_F(ApplicationTestSuite, shallHandleTimeoutDuringOutgoingCall)
+{
+    initApp();
+    clearExpectations();
+    common::PhoneNumber callee{123};
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, showDialCompose());
+    app->handleUiAction(2);
+
+    ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(callee));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(btsPortMock, sendCallRequest(callee));
+    EXPECT_CALL(userPortMock, showAlert(::testing::_, ::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(callee));
+    app->handleUiAction(std::nullopt);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showTalkingMobileScreen(callee));
+    app->handleAcceptCall(callee);
+
+    clearExpectations();
+
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(btsPortMock, sendCallDropped(callee));
+    EXPECT_CALL(userPortMock, showAlert("Call ended", "Call ended due to timeout"));
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleTimeout();
+}
+
+TEST_F(ApplicationTestSuite, shallHandleDialingTimeout)
+{
+    initApp();
+    clearExpectations();
+    common::PhoneNumber callee{123};
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected()).Times(::testing::AtLeast(1));  // akceptujemy min. jedno wywołanie
+    app->handleAttachAccept();
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, showDialCompose());
+    app->handleUiAction(2);
+
+    ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(callee));
+    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+
+    EXPECT_CALL(btsPortMock, sendCallRequest(callee));
+
+    EXPECT_CALL(userPortMock, showAlert(::testing::_, ::testing::_)).Times(::testing::AnyNumber());
+
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(callee));
+
+    app->handleUiAction(std::nullopt);
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, showAlert("Call Timeout", "Recipient did not answer."));
+
+    app->handleTimeout();
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, deleteOutgoingText());
+    EXPECT_CALL(userPortMock, showConnected()).Times(::testing::AtLeast(1));  // może się pojawić więcej razy
+
+    app->handleUiAction(std::nullopt);
+}
 } // namespace ue
