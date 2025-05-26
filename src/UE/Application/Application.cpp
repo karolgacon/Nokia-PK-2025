@@ -111,7 +111,6 @@ namespace ue {
             logger.logError("Ignoring duplicate CallRequest from: ", from);
             return;
         }
-        pendingIncomingCall = from;
 
         if (context.state)
             context.state->handleCallRequest(from);

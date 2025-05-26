@@ -89,11 +89,10 @@ namespace ue
 
     void OutgoingCallState::handleCallRequest(common::PhoneNumber from)
     {
-        logger.logInfo("Received call request while in outgoing call");
+        logger.logInfo("Received call request while in outgoing call from: ", from);
 
         // Option: Drop current call and accept new one
-        context.bts.sendCallDropped(callee);
-        context.setState<IncomingCallState>(from);
+        context.bts.sendCallDropped(from);
     }
 
     void OutgoingCallState::handleNumberUnknown(common::PhoneNumber to)

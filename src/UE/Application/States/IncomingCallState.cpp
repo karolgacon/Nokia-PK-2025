@@ -35,6 +35,7 @@ namespace ue
         logger.logInfo("Call rejected from: ", caller);
         context.timer.stopTimer();
         context.bts.sendCallDropped(caller);
+        context.pendingIncomingCall = std::nullopt;
         context.setState<ConnectedState>();
     }
 
@@ -43,6 +44,7 @@ namespace ue
         logger.logInfo("Incoming call timed out");
         context.timer.stopTimer();
         context.bts.callMissed(caller); // <-- nowa metoda, inny komunikat
+        context.pendingIncomingCall = std::nullopt;
         context.setState<ConnectedState>();
     }
 
@@ -61,6 +63,7 @@ namespace ue
           logger.logInfo("Call dropped from: ", to);
           context.timer.stopTimer();
           context.user.showConnected();
+          context.pendingIncomingCall = std::nullopt;
           context.setState<ConnectedState>();
       }
       else
@@ -76,6 +79,7 @@ namespace ue
             logger.logInfo("Call rejected from: ", to);
             context.timer.stopTimer();
             context.user.showAlert("Call Rejected", "Call was rejected.");
+            context.pendingIncomingCall = std::nullopt;
             context.setState<ConnectedState>();
         }
         else
