@@ -18,6 +18,7 @@ struct Context
     std::unique_ptr<IEventsHandler> state{};
     SmsDatabase smsDatabase;
     common::PhoneNumber thisPhoneNumber;
+    std::optional<common::PhoneNumber> pendingIncomingCall;
 
     template <typename State, typename ...Arg>
     void setState(Arg&& ...arg)

@@ -31,7 +31,8 @@ namespace ue
             logger.logInfo("Call dropped by: ", to);
             context.timer.stopTimer();
             context.user.showAlert("Call ended", "Call ended by remote party");
-            awaitingAfterEnd = true;
+//            awaitingAfterEnd = true;
+            context.setState<ConnectedState>();
         }
     }
 
@@ -81,19 +82,18 @@ namespace ue
     {
         logger.logInfo("Outgoing call timed out");
         context.timer.stopTimer();
-        context.bts.sendCallDropped(callee);
+        context.bts.callMissed(callee); // Notify that the call was missed
         context.user.showAlert("Call ended", "Call ended due to timeout");
         context.setState<ConnectedState>();
-        awaitingAfterEnd = true;
+//        awaitingAfterEnd = true;
     }
 
     void OutgoingCallState::handleCallRequest(common::PhoneNumber from)
     {
-        logger.logInfo("Received call request while in outgoing call");
+        logger.logInfo("Received call request while in outgoing call from: ", from);
 
         // Option: Drop current call and accept new one
-        context.bts.sendCallDropped(callee);
-        context.setState<IncomingCallState>(from);
+        context.bts.sendCallDropped(from);
     }
 
     void OutgoingCallState::handleNumberUnknown(common::PhoneNumber to)

@@ -23,7 +23,7 @@ namespace ue
         diallingNumber = common::PhoneNumber{};  // Reset phone number
     }
 
-    
+
     void DialingState::handleUiAction(std::optional<std::size_t>)
     {
         if (awaitingAfterFail)
@@ -32,7 +32,7 @@ namespace ue
             context.user.showConnected();
             context.user.deleteOutgoingText();
             context.setState<ConnectedState>();
-
+			awaitingAfterFail = false;
             return;
         }
         common::PhoneNumber recipient = context.user.getDialedPhoneNumber();
@@ -60,6 +60,8 @@ namespace ue
         context.bts.sendCallDropped(diallingNumber);
         context.user.showAlert("Call Cancelled", "The call was cancelled.");
         context.timer.stopTimer();
+        diallingNumber = common::PhoneNumber{}; // Reset the dialling number
+    	context.setState<ConnectedState>();
         awaitingAfterFail = true;
     }
 
@@ -105,25 +107,26 @@ namespace ue
 
     void DialingState::handleCallRequest(common::PhoneNumber from)
     {
-        logger.logInfo("Received call request while dialing");
-        if (diallingNumber.isValid())
-        {
-            context.bts.sendCallDropped(diallingNumber);
-        }
-        context.setState<IncomingCallState>(from);
+    logger.logInfo("Received call request while dialing");
+    if (diallingNumber.isValid())
+    {
+        context.bts.sendCallDropped(diallingNumber);
+    }
+    context.setState<IncomingCallState>(from);
     }
 
-    void DialingState::handleCallDropped(common::PhoneNumber from)
+void DialingState::handleCallDropped(common::PhoneNumber from)
+{
+    if (diallingNumber == from)
     {
-         if (diallingNumber == from)
-        {
-            logger.logInfo("Call dropped by: ", from);
-            context.timer.stopTimer();
-            context.user.showAlert("Call Rejected", "Call was rejected by recipient.");
-            context.user.showConnected();
-            context.setState<ConnectedState>();
-            awaitingAfterFail = true;
-        }
+        logger.logInfo("Call dropped by: ", from);
+        context.timer.stopTimer();
+        context.user.showAlert("Call Rejected", "Call was rejected by recipient.");
+        diallingNumber = common::PhoneNumber{}; // Reset the dialling number
+        context.user.showConnected();
+        context.setState<ConnectedState>();
+        awaitingAfterFail = false;
     }
+}
 
 } // namespace ue

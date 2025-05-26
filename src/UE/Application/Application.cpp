@@ -106,6 +106,11 @@ namespace ue {
     void Application::handleCallRequest(common::PhoneNumber from)
     {
         logger.logInfo("Call request received from: ", from);
+        if (pendingIncomingCall == from)
+        {
+            logger.logError("Ignoring duplicate CallRequest from: ", from);
+            return;
+        }
 
         if (context.state)
             context.state->handleCallRequest(from);
@@ -153,10 +158,12 @@ namespace ue {
     {
         logger.logInfo("Talk call from: ", to, " with message: ", message);
 
-        if (context.state)
-            context.state->handleTalkCall(to, message);
-        else
+        if (!context.state)
+        {
             logger.logError("handleTalkCall called with no active state!");
+            return;
+        }
+        context.state->handleTalkCall(to, message);
     }
 
     void Application::handleNumberUnknown(common::PhoneNumber to)
