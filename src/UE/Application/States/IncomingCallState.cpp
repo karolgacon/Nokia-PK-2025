@@ -61,6 +61,7 @@ namespace ue
       if(caller == to)
       {
           logger.logInfo("Call dropped from: ", to);
+          context.user.showAlert("Call ended", "Remote party ended the call");
           context.timer.stopTimer();
           context.user.showConnected();
           context.pendingIncomingCall = std::nullopt;

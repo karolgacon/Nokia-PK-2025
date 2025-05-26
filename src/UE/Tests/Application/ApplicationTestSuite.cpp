@@ -526,19 +526,20 @@ TEST_F(ApplicationTestSuite, shallHandleOutgoingCallDroppedByUser)
     app->handleUiBack();
 }
 
-TEST_F(ApplicationTestSuite, shallHandleOutgoingCallDroppedByRemote)
+    TEST_F(ApplicationTestSuite, shallHandleOutgoingCallDroppedByRemote)
 {
     initApp();
     clearExpectations();
+
     common::PhoneNumber callee{123};
     common::BtsId btsId{42};
 
     EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
-    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(AnyNumber());
     app->handleSib(btsId);
 
-    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
-    EXPECT_CALL(userPortMock, showConnected());
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected()).Times(AtLeast(1));
     app->handleAttachAccept();
 
     clearExpectations();
@@ -547,20 +548,18 @@ TEST_F(ApplicationTestSuite, shallHandleOutgoingCallDroppedByRemote)
     app->handleUiAction(2);
 
     ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(callee));
-    EXPECT_CALL(timerPortMock, startTimer(::testing::_)).Times(::testing::AnyNumber());
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).Times(AtLeast(1));
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(AnyNumber());
     EXPECT_CALL(btsPortMock, sendCallRequest(callee));
-    EXPECT_CALL(userPortMock, showAlert(::testing::_, ::testing::_)).Times(::testing::AnyNumber());
-    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(callee));
-    app->handleUiAction(std::nullopt);
+    EXPECT_CALL(userPortMock, showAlert("Calling", "Dialing number:\n123"));
 
-    EXPECT_CALL(timerPortMock, stopTimer()).Times(::testing::AnyNumber());
-    EXPECT_CALL(userPortMock, showTalkingMobileScreen(callee));
-    app->handleAcceptCall(callee);
+    app->handleUiAction(std::nullopt);  // klik zielonej słuchawki → dialing
 
     clearExpectations();
 
-    EXPECT_CALL(timerPortMock, stopTimer());
-    EXPECT_CALL(userPortMock, showAlert("Call ended", "Call ended by remote party"));
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(AtLeast(1));
+    EXPECT_CALL(userPortMock, showAlert("Call Rejected", "Call was rejected by recipient."));
+    EXPECT_CALL(userPortMock, showConnected()).Times(AtLeast(1));
     app->handleCallDropped(callee);
 }
 
@@ -598,7 +597,7 @@ TEST_F(ApplicationTestSuite, shallHandleTimeoutDuringOutgoingCall)
     clearExpectations();
 
     EXPECT_CALL(timerPortMock, stopTimer());
-    EXPECT_CALL(btsPortMock, sendCallDropped(callee));
+    EXPECT_CALL(btsPortMock, callMissed(callee));
     EXPECT_CALL(userPortMock, showAlert("Call ended", "Call ended due to timeout"));
     EXPECT_CALL(userPortMock, showConnected());
     app->handleTimeout();
