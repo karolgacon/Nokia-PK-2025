@@ -11,14 +11,17 @@ namespace ue
     {
         logger.logInfo("Incoming call from: ", caller);
         context.user.showIncomingCall(from);
-        context.timer.startTimer(TIMEOUT);
+        context.timer.startTimer(std::chrono::milliseconds(5000)); // Start timer for 5 seconds
     }
 
     IncomingCallState::~IncomingCallState()
     {
         context.timer.stopTimer();
     }
-
+    void IncomingCallState::handleAcceptCall(common::PhoneNumber)
+    {
+        handleUiAction(std::nullopt);
+    }
     void IncomingCallState::handleUiAction(std::optional<std::size_t> chosenIndex)
     {
         logger.logInfo("Call accepted from: ", caller);
@@ -39,7 +42,7 @@ namespace ue
     {
         logger.logInfo("Incoming call timed out");
         context.timer.stopTimer();
-        context.bts.sendCallDropped(caller);
+        context.bts.callMissed(caller); // <-- nowa metoda, inny komunikat
         context.setState<ConnectedState>();
     }
 
