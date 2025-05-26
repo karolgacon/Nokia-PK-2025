@@ -648,4 +648,123 @@ TEST_F(ApplicationTestSuite, shallHandleDialingTimeout)
 
     app->handleUiAction(std::nullopt);
 }
+TEST_F(ApplicationTestSuite, shallIgnoreDuplicateIncomingCallRequests)
+{
+    initApp();
+    clearExpectations();
+    common::PhoneNumber from{123};
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(_));
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    clearExpectations();
+    EXPECT_CALL(userPortMock, showIncomingCall(from)).Times(1);
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(AnyNumber());
+
+    app->handleCallRequest(from);
+    app->handleCallRequest(from); // duplikat
+}
+
+    TEST_F(ApplicationTestSuite, shallIgnoreCallTalkWithoutEstablishedCall)
+{
+    initApp();
+    clearExpectations();
+    common::PhoneNumber from{123};
+    common::BtsId btsId{42};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(_));
+    app->handleSib(btsId);
+    EXPECT_CALL(timerPortMock, stopTimer());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    app->handleTalkCall(from, "Ghost message");
+}
+
+TEST_F(ApplicationTestSuite, shallNotSendCallRequestIfPhoneNumberEmpty)
+{
+    initApp();
+    clearExpectations();
+    common::BtsId btsId{42};
+    common::PhoneNumber invalidNumber{0};
+
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(AnyNumber());
+    app->handleSib(btsId);
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    clearExpectations();
+
+    EXPECT_CALL(userPortMock, showDialCompose());
+    app->handleUiAction(2);
+
+    // Pusty/błędny numer
+    ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(invalidNumber));
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(invalidNumber));
+
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(0);
+    EXPECT_CALL(btsPortMock, sendCallRequest(_)).Times(0);
+    EXPECT_CALL(userPortMock, showAlert("Invalid number", "Please enter a valid number."));
+
+    app->handleUiAction(std::nullopt);
+}
+
+    TEST_F(ApplicationTestSuite, shallIgnoreCallDroppedFromUnexpectedNumber)
+{
+    initApp();
+    clearExpectations();
+
+    common::PhoneNumber known{123};
+    common::PhoneNumber unexpected{200};  // musi być < 256
+    common::BtsId btsId{42};
+
+    // Przyłączanie do BTS
+    EXPECT_CALL(btsPortMock, sendAttachRequest(btsId));
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(AnyNumber());
+    app->handleSib(btsId);
+
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(AnyNumber());
+    EXPECT_CALL(userPortMock, showConnected());
+    app->handleAttachAccept();
+
+    clearExpectations();
+
+    // Rozpoczęcie dzwonienia
+    EXPECT_CALL(userPortMock, showDialCompose());
+    app->handleUiAction(2);
+
+    ON_CALL(userPortMock, getDialedPhoneNumber()).WillByDefault(Return(known));
+    EXPECT_CALL(userPortMock, getDialedPhoneNumber()).WillRepeatedly(Return(known));
+
+    EXPECT_CALL(btsPortMock, sendCallRequest(known));
+    EXPECT_CALL(userPortMock, showAlert(_, _)).Times(AnyNumber());
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(AnyNumber());
+    app->handleUiAction(std::nullopt);
+
+    // Oczekiwane przejście do ekranu rozmowy
+    EXPECT_CALL(userPortMock, showTalkingMobileScreen(known));
+    app->handleAcceptCall(known);
+
+    clearExpectations();
+
+    // Brak reakcji na CallDropped od nieoczekiwanego numeru
+    EXPECT_CALL(userPortMock, showAlert(_, _)).Times(0);
+    EXPECT_CALL(userPortMock, showConnected()).Times(0);
+    EXPECT_CALL(userPortMock, showTalkingMobileScreen(_)).Times(0);
+    EXPECT_CALL(userPortMock, addIncomingText(_)).Times(0);
+    EXPECT_CALL(timerPortMock, startTimer(_)).Times(AnyNumber());
+    EXPECT_CALL(timerPortMock, stopTimer()).Times(AnyNumber());
+
+    app->handleCallDropped(unexpected);
+}
+
 } // namespace ue
