@@ -1,16 +1,44 @@
 #pragma once
 
-#include "Ports/ITimerPort.hpp"
 #include "Ports/IBtsPort.hpp"
 #include "Ports/IUserPort.hpp"
-
+#include "Ports/ITimerPort.hpp"
+#include "Messages/PhoneNumber.hpp"
 
 namespace ue
 {
+    namespace details {
+        enum class GuiViewMode {
+            Unknown,
+            MainMenu,
+            SmsList,
+            SmsView,
+            SmsCompose,
+            SmsMenu,
+            DialCompose,
+            //TODO add more here
+        };
+    }
 
 class IEventsHandler : public IBtsEventsHandler,
-                       public IUserEventsHandler,
-                       public ITimerEventsHandler
-{};
+                       public ITimerEventsHandler,
+                       public IUserEventsHandler
+{
+public:
+    virtual ~IEventsHandler() = default;
+    virtual void handleUiAction(std::optional<std::size_t> ind) = 0;
+    virtual void handleUiBack() = 0;
+    //virtual void handleSmsReceive(common::PhoneNumber from, std::string textMessage) = 0;
+    virtual void handleSmsSent(common::PhoneNumber to, bool succeed) = 0;
+    virtual void handleSmsCompose(common::PhoneNumber to, const std::string& textMessage) = 0;
+
+    virtual void handleCallRequest(common::PhoneNumber from) = 0;
+    virtual void handleDialRequest(common::PhoneNumber to) = 0;
+    virtual void handleCallDropped(common::PhoneNumber to) = 0;
+    virtual void handleAcceptCall(common::PhoneNumber to) = 0;
+    virtual void handleCallReject(common::PhoneNumber to) = 0;
+    virtual void handleTalkCall(common::PhoneNumber to, const std::string &message) = 0;
+    virtual void handleNumberUnknown(common::PhoneNumber to) = 0;
+};
 
 }

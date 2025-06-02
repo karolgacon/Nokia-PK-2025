@@ -1,0 +1,37 @@
+name: Cppcheck
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install cppcheck
+        run: sudo apt install cppcheck -y
+
+      - name: Find C++ Standard Library Path
+        run: echo "CXX_INCLUDE_PATH=$(g++ -print-file-name=include | sed 's|/c++||')" >> $GITHUB_ENV
+
+      - name: Run cppcheck
+        run: |
+          cppcheck --enable=all --inconclusive --std=c++17 -I${{ env.CXX_INCLUDE_PATH }} \
+          --suppress=missingInclude --suppress=missingIncludeSystem \
+          --error-exitcode=0 \
+          src/UE/Application src/UE/main.cpp 2> >(tee cppcheck.log)
+
+      - name: Display Cppcheck Issues
+        if: always()
+        run: |
+          if grep -q "error\|warning" cppcheck.log; then
+            echo "### ⚠️ Cppcheck found issues:" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            grep "error\|warning" cppcheck.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No issues found by Cppcheck." >> $GITHUB_STEP_SUMMARY
+          fi
+

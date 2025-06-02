@@ -7,8 +7,11 @@ namespace ue
 
 class NotConnectedState : public BaseState
 {
-public:
-    NotConnectedState(Context& context);
+public:    
+    explicit NotConnectedState(Context& context);
+
+    void handleSib(common::BtsId btsId) override;
+
 };
 
 }

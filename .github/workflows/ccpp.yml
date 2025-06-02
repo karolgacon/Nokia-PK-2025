@@ -2,9 +2,9 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master, dev]
   pull_request:
-    branches: [ master ]
+    branches: [master, dev]
 
 jobs:
   build:
@@ -14,18 +14,18 @@ jobs:
       run:
         shell: bash
         working-directory: src
-        
+
     steps:
     - uses: actions/checkout@v2
     - name: Install Qt
       uses: jurplel/install-qt-action@v2
     - name: cmake
-      run: cmake .
+      run: cmake . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_SUPPRESS_DEVELOPER_WARNINGS=TRUE -DCMAKE_CXX_FLAGS="-w"
     - name: make all targets
       run: make all
 
     - name: UT for BtsApplication
-      run: make BtsApplicationUT 
+      run: make BtsApplicationUT
 
     - name: run BTS ut
       run: ./BTS/Tests/Application/BtsApplicationUT
@@ -33,9 +33,11 @@ jobs:
     - name: UT for COMMON
       run: make COMMON_UT
 
+    - name: run COMMON ut
+      run: ./COMMON/Tests/COMMON_UT
+
     - name: UT for UeApplication
       run: make UeApplicationUT
 
-    - name: Next Steps
-      run: echo "Add your next steps here"
-
+    - name: run UE ut
+      run: ./UE/Tests/Application/UeApplicationUT

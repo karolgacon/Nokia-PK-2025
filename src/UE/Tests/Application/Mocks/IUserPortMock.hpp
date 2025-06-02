@@ -6,23 +6,44 @@
 namespace ue
 {
 
-class IUserEventsHandlerMock : public IUserEventsHandler
-{
-public:
-    IUserEventsHandlerMock();
-    ~IUserEventsHandlerMock() override;
+    class IUserEventsHandlerMock : public IUserEventsHandler
+    {
+    public:
+        IUserEventsHandlerMock();
+        ~IUserEventsHandlerMock() override;
+    };
 
-};
+    // Main mock for user interface port
+    class IUserPortMock : public IUserPort
+    {
+    public:
+        IUserPortMock();
+        ~IUserPortMock() override;
 
-class IUserPortMock : public IUserPort
-{
-public:
-    IUserPortMock();
-    ~IUserPortMock() override;
+        // Connection status
+        MOCK_METHOD(void, showNotConnected, (), (override));
+        MOCK_METHOD(void, showConnecting, (), (override));
+        MOCK_METHOD(void, showConnected, (), (override));
 
-    MOCK_METHOD(void, showNotConnected, (), (final));
-    MOCK_METHOD(void, showConnecting, (), (final));
-    MOCK_METHOD(void, showConnected, (), (final));
-};
+        // SMS-related views
+        MOCK_METHOD(void, showSms, (), (override)); // <--- brakowało!
+        MOCK_METHOD(void, showSmsList, (const std::vector<SmsMessage>& textMessages), (override)); // <--- brakowało!
+        MOCK_METHOD(void, showSmsView, (const SmsMessage& textMessage), (override)); // <--- brakowało!
+        MOCK_METHOD(void, showSmsCompose, (), (override));
+        MOCK_METHOD(void, showDialCompose, (), (override));
+        MOCK_METHOD(common::PhoneNumber, getSmsRecipient, (), (override));
+        MOCK_METHOD(std::string, getSmsTextMessage, (), (override));
 
-}
+        // Generic alert view
+        MOCK_METHOD(void, showAlert, (const std::string& title, const std::string& textMessage), (override));
+        MOCK_METHOD(void, showIncomingCall, (common::PhoneNumber from), (override));
+        MOCK_METHOD(common::PhoneNumber, getDialedPhoneNumber, (), (const, override));
+        MOCK_METHOD(void, showTalkingMobileScreen, (common::PhoneNumber), (override));
+        MOCK_METHOD(void, addIncomingText, (const std::string&), (override));
+        MOCK_METHOD(void, deleteOutgoingText, (), (override));
+        MOCK_METHOD(std::string, getTextFromCall, (), (const, override));
+
+
+    };
+
+} // namespace ue
